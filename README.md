@@ -11,7 +11,7 @@ GUI required (e.g. KDE and LxQt). No non-free firmware (e.g. for a Broadcom
 NIC) has been installed although /etc/apt/sources.list has been updated to
 include the contrib and non-free repositories, the senior user has been added
 to the sudo group so that remote operation via SSH may be used but there is
-no exposure via DHCP or VNC. MarkMLl
+no exposure via XDMCP or VNC. MarkMLl
 
 1.1 -> 1.2
 elvis-tiny
