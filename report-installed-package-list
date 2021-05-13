@@ -1,0 +1,39 @@
+#!/bin/bash
+
+# Using the RCS ,v file created and updated by the log-installed-package-list
+# script which is typically installed in /etc/init.d, create a report showing
+# the sequence of manual package installation. Unless the behaviour of apt-mark
+# changes this does not require root privilege, so should be runnable using any
+# directory for the working files. MarkMLl
+
+cd /etc/apt
+
+MANUAL=installed-package-list-manual
+INCREMENTAL=installed-package-list-incremental
+
+apt-mark showmanual | sort > $MANUAL
+WRAPUP="rm $MANUAL"
+
+rcsdiff deb*list 2> /tmp/$$.2
+RCS_LAST=`grep retrieving < /tmp/$$.2 | cut -d . -f 2`
+RCS_FIRST=1
+
+echo 'Assume that the starting state has got basic Debian installed, followed by any' > $INCREMENTAL
+echo 'GUI required (e.g. KDE and LxQt). No non-free firmware (e.g. for a Broadcom' >> $INCREMENTAL
+echo 'NIC) has been installed although /etc/apt/sources.list has been updated to' >> $INCREMENTAL
+echo 'include the contrib and non-free repositories, the senior user has been added' >> $INCREMENTAL
+echo 'to the sudo group so that remote operation via SSH may be used but there is' >> $INCREMENTAL
+echo 'no exposure via DHCP or VNC. MarkMLl' >> $INCREMENTAL
+echo >> $INCREMENTAL
+
+for I in $(seq 2 $RCS_LAST)
+do
+  Q=1.$(( $I-1 ))
+  R=1.$I
+  echo $Q '->' $R >> $INCREMENTAL
+  rcsdiff -r$Q -r$R /etc/apt/deb*list 2> /dev/null | grep '>' | expand | cut -d ' ' -f 2 | cut -d : -f 1 | sort | join - $MANUAL >> $INCREMENTAL
+  echo >> $INCREMENTAL
+done
+
+$WRAPUP
+

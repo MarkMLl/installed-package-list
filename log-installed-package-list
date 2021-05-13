@@ -1,0 +1,81 @@
+#! /bin/sh
+
+### BEGIN INIT INFO
+# Provides:		log-installed-package-list
+# Required-Start:	$local_fs $remote_fs
+# Required-Stop:
+# Default-Start:	2 3 4 5
+# Default-Stop:		0 1 6
+### END INIT INFO
+
+N=/etc/init.d/log-installed-package-list
+
+set -e
+
+# This non-standard script manages the list of installed Debian packages using
+# RCS. On Squeeze or later, install using update-rc.d. MarkMLl.
+
+# PACKAGE_LIST=/etc/apt/debian_woody_current_package_list
+# PACKAGE_LIST=/etc/apt/debian_sarge_current_package_list
+# PACKAGE_LIST=/etc/apt/debian_etch_current_package_list
+# PACKAGE_LIST=/etc/apt/debian_lenny_current_package_list
+# PACKAGE_LIST=/etc/apt/debian_squeeze_current_package_list
+# PACKAGE_LIST=/etc/apt/debian_wheezy_current_package_list
+# PACKAGE_LIST=/etc/apt/debian_jessie_current_package_list
+# PACKAGE_LIST=/etc/apt/debian_stretch_current_package_list
+PACKAGE_LIST=/etc/apt/debian_buster_current_package_list
+# PACKAGE_LIST=/etc/apt/debian_bullseye_current_package_list
+
+# These commands will look at a particular point in the installation list and
+# indicate which packages have been explicitly installed manually:
+#
+# $ apt-mark showmanual | sort > ~/manual.packages
+# $ rcsdiff -r1.1 -r1.2 /etc/apt/deb*list | grep '>' | expand | cut -d ' ' -f 2 | sort > ~/1.1-1.2.packages
+# $ join ~/1.1-1.2.packages ~/manual.packages > ~/1.1-1.2.manual
+#
+# These may be simplified to e.g.
+#
+# $ apt-mark showmanual | sort > ~/manual.packages
+# $ Q=1.1
+# $ R=1.2
+# $ rcsdiff -r$Q -r$R /etc/apt/deb*list | grep '>' | expand | cut -d ' ' -f 2 | sort | join - ~/manual.packages > ~/$Q-$R.manual
+#
+# ...and so on.
+
+case "$1" in
+  start|reload|restart|force-reload)
+	# Check the current installed package list into RCS if it has changed.
+        if [ ! -x /usr/bin/ci ]
+        then
+          /usr/bin/apt-get install rcs
+        fi
+        if [ ! -x /usr/bin/ci ]
+        then
+          echo $N requires RCS but having difficulty installing it.
+          exit 0
+        fi
+        # Check the symlink that normally runs this at startup.
+#        if [ ! -e /etc/rcS.d/S80log-installed-package-list ]
+#        then
+#          ln -s /etc/init.d/log-installed-package-list /etc/rcS.d/S80log-installed-package-list
+#        fi
+        echo Logging installed package list.
+        /usr/bin/dpkg --get-selections > $PACKAGE_LIST
+        rm -f ,$PACKAGE_LIST 2>/dev/null
+        if [ ! -e $PACKAGE_LIST,v ]
+        then
+          /bin/date | /usr/bin/ci -i $PACKAGE_LIST
+          /usr/bin/co -l $PACKAGE_LIST
+        else
+          /bin/date | /usr/bin/ci -l $PACKAGE_LIST
+        fi
+	;;
+  stop)
+	;;
+  *)
+	echo "Usage: $N {start|stop|restart|force-reload}" >&2
+	exit 1
+	;;
+esac
+
+exit 0
