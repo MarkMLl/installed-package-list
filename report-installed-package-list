@@ -23,7 +23,7 @@ echo 'GUI required (e.g. KDE and LxQt). No non-free firmware (e.g. for a Broadco
 echo 'NIC) has been installed although /etc/apt/sources.list has been updated to' >> $INCREMENTAL
 echo 'include the contrib and non-free repositories, the senior user has been added' >> $INCREMENTAL
 echo 'to the sudo group so that remote operation via SSH may be used but there is' >> $INCREMENTAL
-echo 'no exposure via DHCP or VNC. MarkMLl' >> $INCREMENTAL
+echo 'no exposure via XDMCP or VNC. MarkMLl' >> $INCREMENTAL
 echo >> $INCREMENTAL
 
 for I in $(seq 2 $RCS_LAST)
