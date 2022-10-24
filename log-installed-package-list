@@ -23,8 +23,9 @@ set -e
 # PACKAGE_LIST=/etc/apt/debian_wheezy_current_package_list
 # PACKAGE_LIST=/etc/apt/debian_jessie_current_package_list
 # PACKAGE_LIST=/etc/apt/debian_stretch_current_package_list
-PACKAGE_LIST=/etc/apt/debian_buster_current_package_list
-# PACKAGE_LIST=/etc/apt/debian_bullseye_current_package_list
+# PACKAGE_LIST=/etc/apt/debian_buster_current_package_list
+PACKAGE_LIST=/etc/apt/debian_bullseye_current_package_list
+# PACKAGE_LIST=/etc/apt/debian_bookworm_current_package_list
 
 # These commands will look at a particular point in the installation list and
 # indicate which packages have been explicitly installed manually:
