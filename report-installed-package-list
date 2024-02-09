@@ -6,17 +6,28 @@
 # changes this does not require root privilege, so should be runnable using any
 # directory for the working files. MarkMLl
 
-cd /etc/apt
+# An explicit prefix may be given when- for example- a copy of an old system is
+# being investigated. This is also one of the situations where an explicit
+# location will need to be specified for the extended_states file, refer to the
+# apt-mark manpage for details.
+
+# PREFIX=/home/markMLl/OLD/sdb2
+# E_STATES="-f ${PREFIX:-}/var/lib/apt/extended_states"
+
+# By and large, it should not be necessary to change anything below... unless
+# system files are in really odd locations.
+
+cd ${PREFIX:-}/etc/apt
 
 MANUAL=installed-package-list-manual
 INCREMENTAL=installed-package-list-incremental
 
-apt-mark showmanual | sort > $MANUAL
+apt-mark ${E_STATES:-} showmanual | sort > $MANUAL
 WRAPUP="rm $MANUAL"
 
 rcsdiff deb*list 2> /tmp/$$.2
 RCS_LAST=`grep retrieving < /tmp/$$.2 | cut -d . -f 2`
-RCS_FIRST=1
+RCS_FIRST=2
 
 echo 'Assume that the starting state has got basic Debian installed, followed by any' > $INCREMENTAL
 echo 'GUI required (e.g. KDE and LxQt). No non-free firmware (e.g. for a Broadcom' >> $INCREMENTAL
@@ -26,14 +37,13 @@ echo 'to the sudo group so that remote operation via SSH may be used but there i
 echo 'no exposure via XDMCP or VNC. MarkMLl' >> $INCREMENTAL
 echo >> $INCREMENTAL
 
-for I in $(seq 2 $RCS_LAST)
+for I in $(seq $RCS_FIRST $RCS_LAST)
 do
-  Q=1.$(( $I-1 ))
+  Q=1.$(($I-1))
   R=1.$I
   echo $Q '->' $R >> $INCREMENTAL
-  rcsdiff -r$Q -r$R /etc/apt/deb*list 2> /dev/null | grep '>' | expand | cut -d ' ' -f 2 | cut -d : -f 1 | sort | join - $MANUAL >> $INCREMENTAL
+  rcsdiff -r$Q -r$R ./deb*list 2> /dev/null | grep '>' | expand | cut -d ' ' -f 2 | cut -d : -f 1 | sort | join - $MANUAL >> $INCREMENTAL
   echo >> $INCREMENTAL
 done
 
 $WRAPUP
-
