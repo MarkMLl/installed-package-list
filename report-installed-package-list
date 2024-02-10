@@ -6,6 +6,8 @@
 # changes this does not require root privilege, so should be runnable using any
 # directory for the working files. MarkMLl
 
+# set -x
+
 # An explicit prefix may be given when- for example- a copy of an old system is
 # being investigated. This is also one of the situations where an explicit
 # location will need to be specified for the extended_states file, refer to the
@@ -29,19 +31,25 @@ rcsdiff deb*list 2> /tmp/$$.2
 RCS_LAST=`grep retrieving < /tmp/$$.2 | cut -d . -f 2`
 RCS_FIRST=2
 
-echo 'Assume that the starting state has got basic Debian installed, followed by any' > $INCREMENTAL
-echo 'GUI required (e.g. KDE and LxQt). No non-free firmware (e.g. for a Broadcom' >> $INCREMENTAL
-echo 'NIC) has been installed although /etc/apt/sources.list has been updated to' >> $INCREMENTAL
-echo 'include the contrib and non-free repositories, the senior user has been added' >> $INCREMENTAL
-echo 'to the sudo group so that remote operation via SSH may be used but there is' >> $INCREMENTAL
-echo 'no exposure via XDMCP or VNC. MarkMLl' >> $INCREMENTAL
+echo 'Assume that the starting state (in effect, release 1.1) has got basic Debian' > $INCREMENTAL
+echo 'installed, followed by a GUI if required (e.g. KDE and/or LxQt). No non-free' >> $INCREMENTAL
+echo 'firmware (e.g. for a Broadcom NIC) has been installed although ./sources.list' >> $INCREMENTAL
+echo 'has been updated to include the contrib and non-free repositories, the senior' >> $INCREMENTAL
+echo 'user has been added to the sudo group so that remote operation via SSH may be' >> $INCREMENTAL
+echo 'used but there is no exposure via XDMCP or VNC. MarkMLl' >> $INCREMENTAL
+echo >> $INCREMENTAL
+
+R=1.$(($RCS_FIRST-1))
+S=`rlog -r$R ./deb*list | grep date: | cut -d ';' -f 1 | cut -d ' ' -f 2,3`
+echo '->' $R, $S >> $INCREMENTAL
 echo >> $INCREMENTAL
 
 for I in $(seq $RCS_FIRST $RCS_LAST)
 do
   Q=1.$(($I-1))
   R=1.$I
-  echo $Q '->' $R >> $INCREMENTAL
+  S=`rlog -r$R ./deb*list | grep date: | cut -d ';' -f 1 | cut -d ' ' -f 2,3`
+  echo $Q '->' $R, $S >> $INCREMENTAL
   rcsdiff -r$Q -r$R ./deb*list 2> /dev/null | grep '>' | expand | cut -d ' ' -f 2 | cut -d : -f 1 | sort | join - $MANUAL >> $INCREMENTAL
   echo >> $INCREMENTAL
 done
